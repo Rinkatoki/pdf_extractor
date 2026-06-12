@@ -2,6 +2,9 @@ from fastapi import FastAPI, UploadFile, File
 from pypdf import PdfReader
 import os
 from pdf_reader import extract_text_from_pdf
+from chunker import create_chunks
+from embeddings import generate_embedding,generate_embeddings
+from vector_store import store_chunks
 
 app = FastAPI()
 
@@ -21,10 +24,26 @@ async def upload_pdf(file: UploadFile = File(...)):
         f.write(await file.read())
 
     text, pages = extract_text_from_pdf(file_path)
-
+    chunks = create_chunks(
+    text,
+    chunk_size=500,
+    overlap=100
+    )
+    vectors = generate_embeddings(chunks)
+    store_chunks(
+    chunks,
+    vectors
+    )
     return {
         "filename": file.filename,
         "pages": pages,
         "characters": len(text),
-        "preview": text[:500]
+        "chunks": len(chunks),
+        "embedding_dimension": len(vectors[0]),
+        "first_chunk": chunks[0] if chunks else ""
     }
+
+
+
+
+
