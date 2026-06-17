@@ -8,7 +8,7 @@ collection = client.get_or_create_collection(
 )
 
 
-def store_chunks(chunks, embeddings):
+def store_chunks(chunks, embeddings,filename):
 
     ids = [
         str(uuid.uuid4())
@@ -16,10 +16,17 @@ def store_chunks(chunks, embeddings):
     ]
 
     collection.add(
-        ids=ids,
-        documents=chunks,
-        embeddings=embeddings
-    )
+    ids=ids,
+    documents=chunks,
+    embeddings=embeddings,
+    metadatas=[
+        {
+            "filename": filename,
+            "chunk_index": i
+        }
+        for i in range(len(chunks))
+    ]
+)
 
 
 def search_chunks(query_embedding, n_results=3):
